@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.506">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -24,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -106,10 +106,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </div>
   
 
+
 </header>
 
-<section id="lets-ask-to-copilot-what-is-segmentation-and-k-means-clustering-and-why-is-it-important-to-marketing-analytics" class="level4">
-<h4 class="anchored" data-anchor-id="lets-ask-to-copilot-what-is-segmentation-and-k-means-clustering-and-why-is-it-important-to-marketing-analytics">Let’s ask to CoPilot: What is segmentation, and k-means clustering? and why is it important to marketing analytics?</h4>
+
+<section id="lets-ask-copilot-what-is-segmentation-and-k-means-clustering-and-why-is-it-important-to-marketing-analytics" class="level4">
+<h4 class="anchored" data-anchor-id="lets-ask-copilot-what-is-segmentation-and-k-means-clustering-and-why-is-it-important-to-marketing-analytics">Let’s ask CoPilot: What is segmentation, and k-means clustering? and why is it important to marketing analytics?</h4>
 <ul>
 <li><p>Segmentation is the process of dividing a market into distinct groups of consumers who have similar needs, preferences, or behaviors. By segmenting the market, companies can better understand their customers and tailor their marketing strategies to meet the specific needs of each segment. This allows companies to target their marketing efforts more effectively and efficiently, leading to increased customer satisfaction and loyalty.</p></li>
 <li><p>k-means clustering is a popular method used in segmentation analysis to group similar data points into clusters based on their attributes. The algorithm works by iteratively assigning data points to the nearest centroid and updating the centroids based on the mean of the data points in each cluster. This process continues until the centroids no longer change significantly, resulting in well-defined clusters.</p></li>
@@ -267,6 +269,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </div>
 </div>
+<p><br></p>
+<p>I will take out the non-numeric columns, so that we can apply k-means clustering to the dataset.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset and select only numeric columns</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> palmerpenguins<span class="sc">::</span>penguins <span class="sc">%&gt;%</span></span>
@@ -362,51 +366,97 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </div>
 </div>
+<section id="what-is-k-means-clustering" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-k-means-clustering">What is K-means clustering?</h3>
+<ul>
+<li>Imagine you have a box of colorful candies, and you want to group them into different piles based on their colors. K-means clustering is a way to do that grouping automatically.</li>
+<li>It’s an unsupervised machine learning algorithm that tries to find groups in the data based on their similarity. The “K” in K-means refers to the number of groups you want to find in the data. The algorithm works by iteratively assigning data points to the nearest cluster centroid and updating the centroids based on the mean of the data points in each cluster. This process continues until the centroids no longer change significantly, resulting in well-defined clusters.</li>
+</ul>
 </section>
-<section id="custom-k-means-implementation" class="level2">
-<h2 class="anchored" data-anchor-id="custom-k-means-implementation">Custom K-Means Implementation</h2>
+</section>
+<section id="custom-k-means-implementation-i-will-try-my-best-to-explain-the-code-below." class="level2">
+<h2 class="anchored" data-anchor-id="custom-k-means-implementation-i-will-try-my-best-to-explain-the-code-below.">Custom K-Means Implementation (I will try my best to explain the code below.)</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to implement k-means</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>kmeans_custom <span class="ot">&lt;-</span> <span class="cf">function</span>(data, k, <span class="at">max_iter =</span> <span class="dv">100</span>) {</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(data)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  centers <span class="ot">&lt;-</span> data[<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, k), ]</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  clusters <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, n)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (iter <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>max_iter) {</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Assign clusters</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n) {</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>      distances <span class="ot">&lt;-</span> <span class="fu">apply</span>(centers, <span class="dv">1</span>, <span class="cf">function</span>(center) <span class="fu">sum</span>((data[i, ] <span class="sc">-</span> center)<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>      clusters[i] <span class="ot">&lt;-</span> <span class="fu">which.min</span>(distances)</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update centers</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    new_centers <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="at">ncol =</span> p, <span class="at">nrow =</span> k)</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k) {</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>      new_centers[j, ] <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(data[clusters <span class="sc">==</span> j, , <span class="at">drop=</span><span class="cn">FALSE</span>])</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check for convergence</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">all</span>(centers <span class="sc">==</span> new_centers, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="cf">break</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    centers <span class="ot">&lt;-</span> new_centers</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">centers =</span> <span class="fu">as.data.frame</span>(centers), <span class="at">clusters =</span> clusters)</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Starting the function</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>kmeans_custom <span class="ot">&lt;-</span> <span class="cf">function</span>(data, k, <span class="at">max_iter =</span> <span class="dv">100</span>) {</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># We start by creating a function called kmeans_custom.</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># data is a list of candies with different features (like size, color).</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># k is the number of groups (or piles) we want to make.</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># max_iter is the maximum number of times we will try to make the groups better.</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Getting ready</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(data)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  centers <span class="ot">&lt;-</span> data[<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, k), ]</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  clusters <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, n)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># n is the number of candies.</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># p is the number of features of each candy (like size, color).</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># centers are the starting points for our piles. We pick k random candies to start with.</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># clusters is a list that will keep track of which pile each candy belongs to.</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Grouping Candies</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (iter <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>max_iter) {</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n) {</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>      distances <span class="ot">&lt;-</span> <span class="fu">apply</span>(centers, <span class="dv">1</span>, <span class="cf">function</span>(center) <span class="fu">sum</span>((data[i, ] <span class="sc">-</span> center)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>      clusters[i] <span class="ot">&lt;-</span> <span class="fu">which.min</span>(distances)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># We loop max_iter times to try to make the piles better.</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># For each candy, we calculate how "far" it is from each pile's center. The distance is like how different the candy is from the pile's typical candy.</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># We put the candy in the pile with the smallest distance (the most similar pile).</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Updating Pile Centers</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    new_centers <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="at">ncol =</span> p, <span class="at">nrow =</span> k)</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k) {</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>      new_centers[j, ] <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(data[clusters <span class="sc">==</span> j, , <span class="at">drop=</span><span class="cn">FALSE</span>])</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    <span class="co"># We create a new list for the centers of the piles.</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    <span class="co"># For each pile, we find the average of all the candies in that pile. This average becomes the new center of the pile.</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Checking for Changes</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">all</span>(centers <span class="sc">==</span> new_centers, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="cf">break</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    centers <span class="ot">&lt;-</span> new_centers</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  <span class="co"># If the centers don't change anymore, we stop because the piles are as good as they will get.</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>  <span class="co"># If the centers do change, we update the centers and try again.</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Finishing Up:</span></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">centers =</span> <span class="fu">as.data.frame</span>(centers), <span class="at">clusters =</span> clusters)</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>  <span class="co"># We return the final centers of the piles and the list of which pile each candy belongs to.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p><br></p>
 </section>
 <section id="visualization-of-k-means-algorithm" class="level2">
 <h2 class="anchored" data-anchor-id="visualization-of-k-means-algorithm">Visualization of K-Means Algorithm</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set parameters</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="dv">3</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">kmeans_custom</span>(data, k)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Rename columns of the centers to match the original data</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(result<span class="sc">$</span>centers) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(data)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the cluster results to the data</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>cluster <span class="ot">&lt;-</span> <span class="fu">factor</span>(result<span class="sc">$</span>clusters)</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span> </span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">kmeans_custom</span>(data, k)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>Here, k is set to 3, meaning we want to divide the data into 3 clusters.</li>
+<li>This function we just created will perform the K-Means clustering and return the centers of the clusters and the cluster assignments for each data point.</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rename columns of the centers to match the original data</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(result<span class="sc">$</span>centers) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(data)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the cluster results to the data</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>cluster <span class="ot">&lt;-</span> <span class="fu">factor</span>(result<span class="sc">$</span>clusters)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span> </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <colgroup>
@@ -434,7 +484,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">181</td>
 <td style="text-align: right;">3750</td>
 <td style="text-align: right;">2007</td>
-<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">39.5</td>
@@ -442,7 +492,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">186</td>
 <td style="text-align: right;">3800</td>
 <td style="text-align: right;">2007</td>
-<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">40.3</td>
@@ -450,7 +500,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">195</td>
 <td style="text-align: right;">3250</td>
 <td style="text-align: right;">2007</td>
-<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">36.7</td>
@@ -458,7 +508,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">193</td>
 <td style="text-align: right;">3450</td>
 <td style="text-align: right;">2007</td>
-<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">39.3</td>
@@ -466,7 +516,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">190</td>
 <td style="text-align: right;">3650</td>
 <td style="text-align: right;">2007</td>
-<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">38.9</td>
@@ -474,7 +524,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">181</td>
 <td style="text-align: right;">3625</td>
 <td style="text-align: right;">2007</td>
-<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">39.2</td>
@@ -482,7 +532,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">195</td>
 <td style="text-align: right;">4675</td>
 <td style="text-align: right;">2007</td>
-<td style="text-align: left;">2</td>
+<td style="text-align: left;">3</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">34.1</td>
@@ -490,7 +540,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">193</td>
 <td style="text-align: right;">3475</td>
 <td style="text-align: right;">2007</td>
-<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">42.0</td>
@@ -498,7 +548,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">190</td>
 <td style="text-align: right;">4250</td>
 <td style="text-align: right;">2007</td>
-<td style="text-align: left;">2</td>
+<td style="text-align: left;">3</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">37.8</td>
@@ -506,43 +556,158 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">186</td>
 <td style="text-align: right;">3300</td>
 <td style="text-align: right;">2007</td>
-<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
+<section id="the-data-table-shows-the-first-10-rows-of-the-palmer-penguins-dataset-with-cluster-assignments-after-applying-a-custom-k-means-clustering-algorithm." class="level4">
+<h4 class="anchored" data-anchor-id="the-data-table-shows-the-first-10-rows-of-the-palmer-penguins-dataset-with-cluster-assignments-after-applying-a-custom-k-means-clustering-algorithm.">The data table shows the first 10 rows of the Palmer Penguins dataset with cluster assignments after applying a custom K-Means clustering algorithm.</h4>
+</section>
+<section id="columns" class="level4">
+<h4 class="anchored" data-anchor-id="columns">Columns</h4>
+<ul>
+<li>bill_length_mm: The length of the penguin’s bill in millimeters.</li>
+<li>bill_depth_mm: The depth (or height) of the penguin’s bill in millimeters.</li>
+<li>flipper_length_mm: The length of the penguin’s flipper in millimeters.</li>
+<li>body_mass_g: The mass of the penguin in grams.</li>
+<li>year: The year the data was collected.</li>
+<li>cluster: The cluster assignment for each penguin, indicating which group the K-Means algorithm assigned it to.</li>
+</ul>
+</section>
+<section id="each-penguin-is-assigned-to-one-of-three-clusters-1-2-or-3-based-on-similarities-in-their-physical-measurements-bill-length-bill-depth-flipper-length-and-body-mass." class="level4">
+<h4 class="anchored" data-anchor-id="each-penguin-is-assigned-to-one-of-three-clusters-1-2-or-3-based-on-similarities-in-their-physical-measurements-bill-length-bill-depth-flipper-length-and-body-mass.">Each penguin is assigned to one of three clusters (1, 2, or 3), based on similarities in their physical measurements (bill length, bill depth, flipper length, and body mass).</h4>
+<p><br><br></p>
+</section>
+<section id="now-it-will-be-benefitial-to-have-a-visual-representation-of-the-clusters.-we-can-use-a-pair-plot-to-visualize-the-relationships-between-the-variables-and-how-they-are-grouped-by-cluster." class="level4">
+<h4 class="anchored" data-anchor-id="now-it-will-be-benefitial-to-have-a-visual-representation-of-the-clusters.-we-can-use-a-pair-plot-to-visualize-the-relationships-between-the-variables-and-how-they-are-grouped-by-cluster.">Now it will be benefitial to have a visual representation of the clusters. We can use a pair plot to visualize the relationships between the variables and how they are grouped by cluster.</h4>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggpairs</span>(data, <span class="at">columns =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="fu">aes</span>(<span class="at">color =</span> cluster)) <span class="sc">+</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Pair Plot of Palmer Penguins Clusters"</span>) <span class="sc">+</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggpairs</span>(data, <span class="at">columns =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="fu">aes</span>(<span class="at">color =</span> cluster, <span class="at">alpha =</span> <span class="fl">0.7</span>)) <span class="sc">+</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">20</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Pair Plot of Palmer Penguins Clusters"</span>, </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Feature Value"</span>, </span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Density"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="hw5_questions_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="1056"></p>
+<p><img src="hw5_questions_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="1056"></p>
 </figure>
 </div>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the initial data with random centroids</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> bill_length_mm, <span class="at">y =</span> bill_depth_mm, <span class="at">color =</span> cluster)) <span class="sc">+</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> result<span class="sc">$</span>centers, <span class="fu">aes</span>(<span class="at">x =</span> bill_length_mm, <span class="at">y =</span> bill_depth_mm), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">size =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Initial Data with Random Centroids"</span>) <span class="sc">+</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="hw5_questions_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-<section id="what-is-pca" class="level5">
-<h5 class="anchored" data-anchor-id="what-is-pca">What is PCA?</h5>
+</section>
+<section id="interpretation-of-the-pair-plot" class="level4">
+<h4 class="anchored" data-anchor-id="interpretation-of-the-pair-plot">Interpretation of the Pair Plot</h4>
+<ul>
+<li>The pair plot provides a visual representation of the relationships between different pairs of features in the Palmer Penguins dataset, along with the clusters identified by the custom K-Means algorithm. Here’s a detailed interpretation of the plot:</li>
+</ul>
+<section id="general-observations" class="level5">
+<h5 class="anchored" data-anchor-id="general-observations">General Observations:</h5>
+</section>
+<section id="clusters" class="level5">
+<h5 class="anchored" data-anchor-id="clusters">- Clusters:</h5>
+<ul>
+<li>The plot shows three clusters, represented by different colors (red, green, and blue).</li>
+<li>Each cluster groups penguins with similar physical characteristics.</li>
+</ul>
+</section>
+<section id="density-plots" class="level5">
+<h5 class="anchored" data-anchor-id="density-plots">- Density Plots:</h5>
+<ul>
+<li>The diagonal elements of the plot are density plots for each feature.</li>
+<li>These show the distribution of each feature (e.g., bill length, bill depth, flipper length, and body mass) within each cluster.</li>
+</ul>
+</section>
+<section id="scatter-plots" class="level5">
+<h5 class="anchored" data-anchor-id="scatter-plots">- Scatter Plots:</h5>
+<ul>
+<li>The off-diagonal elements are scatter plots showing pairwise relationships between features.</li>
+<li>These plots help in understanding how different features relate to each other and how the clusters are distributed across these relationships.</li>
+</ul>
+</section>
+<section id="detailed-feature-relationships" class="level5">
+<h5 class="anchored" data-anchor-id="detailed-feature-relationships">Detailed Feature Relationships:</h5>
+<section id="bill-length-vs.-bill-depth" class="level6">
+<h6 class="anchored" data-anchor-id="bill-length-vs.-bill-depth">Bill Length vs.&nbsp;Bill Depth:</h6>
+<ul>
+<li>The scatter plot shows that Cluster 3 (blue) generally has shorter bill lengths and depths compared to the other clusters.</li>
+<li>Cluster 1 (red) has a wider range of bill lengths and depths, while Cluster 2 (green) has bill lengths and depths that are in between Clusters 1 and 3.</li>
+</ul>
+</section>
+<section id="bill-length-vs.-flipper-length" class="level6">
+<h6 class="anchored" data-anchor-id="bill-length-vs.-flipper-length">Bill Length vs.&nbsp;Flipper Length:</h6>
+<ul>
+<li>The scatter plot indicates that Cluster 3 (blue) has shorter bill lengths and longer flipper lengths.</li>
+<li>Cluster 1 (red) shows a more even spread across different bill and flipper lengths.</li>
+<li>Cluster 2 (green) has bill lengths and flipper lengths that are intermediate.</li>
+</ul>
+</section>
+<section id="bill-length-vs.-body-mass" class="level6">
+<h6 class="anchored" data-anchor-id="bill-length-vs.-body-mass">Bill Length vs.&nbsp;Body Mass:</h6>
+<ul>
+<li>Cluster 3 (blue) has shorter bill lengths and generally higher body mass.</li>
+<li>Cluster 1 (red) has a wider range of both bill lengths and body mass.</li>
+<li>Cluster 2 (green) falls in between, with moderate bill lengths and body mass.</li>
+</ul>
+</section>
+<section id="bill-depth-vs.-flipper-length" class="level6">
+<h6 class="anchored" data-anchor-id="bill-depth-vs.-flipper-length">Bill Depth vs.&nbsp;Flipper Length:</h6>
+<ul>
+<li>Cluster 3 (blue) has a moderate range of bill depths but longer flipper lengths.</li>
+<li>Cluster 1 (red) has a broad range of bill depths and flipper lengths.</li>
+<li>Cluster 2 (green) shows a narrower range of bill depths but still has considerable variation in flipper lengths.</li>
+</ul>
+</section>
+<section id="bill-depth-vs.-body-mass" class="level6">
+<h6 class="anchored" data-anchor-id="bill-depth-vs.-body-mass">Bill Depth vs.&nbsp;Body Mass:</h6>
+<ul>
+<li>Cluster 3 (blue) shows a moderate bill depth but higher body mass.</li>
+<li>Cluster 1 (red) again shows a broad range, indicating more diversity in this cluster.</li>
+<li>Cluster 2 (green) has a narrower range of bill depths and body mass.</li>
+</ul>
+</section>
+<section id="flipper-length-vs.-body-mass" class="level6">
+<h6 class="anchored" data-anchor-id="flipper-length-vs.-body-mass">Flipper Length vs.&nbsp;Body Mass:</h6>
+<ul>
+<li>Cluster 3 (blue) has longer flipper lengths and higher body mass.</li>
+<li>Cluster 1 (red) shows considerable variation across both flipper length and body mass.</li>
+<li>Cluster 2 (green) falls in between the other two clusters with moderate values.</li>
+</ul>
+</section>
+</section>
+<section id="correlation-coefficients" class="level5">
+<h5 class="anchored" data-anchor-id="correlation-coefficients">Correlation Coefficients:</h5>
+<ul>
+<li>Corr values in the upper triangular section show the correlation coefficients between pairs of features.</li>
+<li>For example, the correlation between bill length and flipper length is 0.656, indicating a positive relationship.</li>
+</ul>
+</section>
+<section id="summary" class="level5">
+<h5 class="anchored" data-anchor-id="summary">Summary:</h5>
+<ul>
+<li>Cluster 1 (Red): Shows a high degree of variability in all features, indicating a diverse group of penguins.</li>
+<li>Cluster 2 (Green): Generally has moderate values for all features, falling in between the other two clusters.</li>
+<li>Cluster 3 (Blue): Has shorter bill lengths but longer flipper lengths and higher body mass, making it a distinct group.</li>
+</ul>
+</section>
+</section>
+<section id="overall-the-pair-plot-provides-a-comprehensive-view-of-the-relationships-between-different-features-and-how-they-are-grouped-by-cluster.-this-visualization-helps-in-understanding-the-characteristics-of-each-cluster-and-how-the-k-means-algorithm-has-divided-the-penguins-based-on-their-physical-measurements." class="level4">
+<h4 class="anchored" data-anchor-id="overall-the-pair-plot-provides-a-comprehensive-view-of-the-relationships-between-different-features-and-how-they-are-grouped-by-cluster.-this-visualization-helps-in-understanding-the-characteristics-of-each-cluster-and-how-the-k-means-algorithm-has-divided-the-penguins-based-on-their-physical-measurements.">Overall, the pair plot provides a comprehensive view of the relationships between different features and how they are grouped by cluster. This visualization helps in understanding the characteristics of each cluster and how the K-Means algorithm has divided the penguins based on their physical measurements.</h4>
+<p><br><br></p>
+</section>
+<section id="what-is-pca" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-pca">What is PCA?</h3>
 <ul>
 <li>PCA (Principal Component Analysis) is a dimensionality reduction technique that is commonly used in data analysis to identify patterns and relationships in high-dimensional data.</li>
 </ul>
 </section>
-<section id="why-is-it-benefitial-to-use-pca-before-clustering" class="level5">
-<h5 class="anchored" data-anchor-id="why-is-it-benefitial-to-use-pca-before-clustering">Why is it benefitial to use PCA before clustering?</h5>
+<section id="why-is-it-benefitial-to-use-pca-before-clustering" class="level3">
+<h3 class="anchored" data-anchor-id="why-is-it-benefitial-to-use-pca-before-clustering">Why is it benefitial to use PCA before clustering?</h3>
 <ul>
 <li>Because it reduces the dimensionality of the data by transforming the original features into a new set of uncorrelated variables called principal components. This transformation helps to capture the most important information in the data while removing noise and redundancy. By reducing the number of dimensions, PCA simplifies the data and makes it easier to visualize and interpret. This can improve the performance of clustering algorithms by reducing the computational complexity and enhancing the clustering results. Additionally, PCA can help to identify the most relevant features that contribute to the clustering process, leading to more accurate and meaningful cluster assignments.</li>
 </ul>
@@ -554,20 +719,248 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>pca_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(pca_result<span class="sc">$</span>ind<span class="sc">$</span>coord)</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>pca_data<span class="sc">$</span>cluster <span class="ot">&lt;-</span> data<span class="sc">$</span>cluster</span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot PCA results</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_pca_ind</span>(pca_result,</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">geom.ind =</span> <span class="st">"point"</span>,</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">col.ind =</span> pca_data<span class="sc">$</span>cluster,</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">palette =</span> <span class="st">"jco"</span>,</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">addEllipses =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">legend.title =</span> <span class="st">"Clusters"</span>) <span class="sc">+</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"PCA of Palmer Penguins Clusters"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot PCA results</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_pca_ind</span>(pca_result,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">geom.ind =</span> <span class="st">"point"</span>,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">col.ind =</span> pca_data<span class="sc">$</span>cluster,</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">palette =</span> <span class="st">"jco"</span>,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">addEllipses =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>             <span class="at">legend.title =</span> <span class="st">"Clusters"</span>) <span class="sc">+</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"PCA of Palmer Penguins Clusters"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="hw5_questions_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+<div>
+<figure class="figure">
+<p><img src="hw5_questions_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
 </div>
-<p><em>todo: Compare your results to the built-in <code>kmeans</code> function in R.</em></p>
-<p><em>todo: Calculate both the within-cluster-sum-of-squares and silhouette scores (you can use built-in functions to do so) and plot the results for various numbers of clusters (ie, K=2,3,…,7). How many clusters are suggested by these two metrics?</em></p>
+</div>
+<section id="interpretation-of-the-pca-plot" class="level4">
+<h4 class="anchored" data-anchor-id="interpretation-of-the-pca-plot">Interpretation of the PCA Plot</h4>
+<ul>
+<li>The PCA (Principal Component Analysis) plot provides a visual representation of the Palmer Penguins dataset in a reduced two-dimensional space, with clusters identified by the custom K-Means algorithm. Here’s a detailed interpretation of the plot:</li>
+</ul>
+<section id="axes" class="level5">
+<h5 class="anchored" data-anchor-id="axes">Axes:</h5>
+<ul>
+<li>Dim1 (68.8%): The first principal component, which explains 68.8% of the variance in the data.</li>
+<li>Dim2 (19.3%): The second principal component, which explains 19.3% of the variance in the data.</li>
+<li>Together, these two dimensions explain 88.1% of the variance in the data, making them a good summary of the dataset.</li>
+</ul>
+</section>
+</section>
+<section id="clusters-1" class="level4">
+<h4 class="anchored" data-anchor-id="clusters-1">Clusters:</h4>
+<section id="the-plot-shows-three-clusters-represented-by-different-colors-and-shapes" class="level5">
+<h5 class="anchored" data-anchor-id="the-plot-shows-three-clusters-represented-by-different-colors-and-shapes">The plot shows three clusters, represented by different colors and shapes:</h5>
+<ul>
+<li>Cluster 1 (Blue, Circles)</li>
+<li>Cluster 2 (Orange, Triangles)</li>
+<li>Cluster 3 (Gray, Squares)</li>
+</ul>
+</section>
+</section>
+<section id="ellipses" class="level4">
+<h4 class="anchored" data-anchor-id="ellipses">Ellipses:</h4>
+<ul>
+<li>The ellipses around each cluster represent the 95% confidence interval for the cluster’s data points. This gives a sense of the spread and concentration of each cluster.</li>
+</ul>
+</section>
+<section id="principal-components" class="level4">
+<h4 class="anchored" data-anchor-id="principal-components">Principal Components:</h4>
+<ul>
+<li>Dim1 is the most significant in explaining the variance in the dataset and is the primary axis along which the clusters are separated.</li>
+</ul>
+</section>
+<section id="confidence-intervals" class="level4">
+<h4 class="anchored" data-anchor-id="confidence-intervals">Confidence Intervals:</h4>
+<ul>
+<li>The ellipses provide a visual indication of the spread and overlap of the clusters. The ellipses for each cluster do not overlap significantly, indicating clear separation between the clusters.</li>
+<li>The 95% confidence intervals indicate that while there is clear separation between the clusters, there is also some overlap between them. This suggests that there may be some ambiguity in the classification of certain data points. However, the clusters are generally well-defined and distinct.</li>
+<li>This PCA plot effectively reduces the multidimensional penguin data into two dimensions, highlighting the key features that separate the clusters and providing a clear visual of the distinct groups within the dataset. This visualization can help in understanding the relationships between the clusters and the underlying structure of the data.</li>
+</ul>
+<p><br><br></p>
+</section>
+<section id="now-we-will-compare-the-performance-of-my-k-means-clustering-code-with-that-of-the-built-in-r-function." class="level4">
+<h4 class="anchored" data-anchor-id="now-we-will-compare-the-performance-of-my-k-means-clustering-code-with-that-of-the-built-in-r-function.">Now we will compare the performance of my k-means clustering code with that of the built-in R function.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run custom K-Means</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>result_custom <span class="ot">&lt;-</span> <span class="fu">kmeans_custom</span>(data, k)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>result_custom</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$centers
+        V1       V2       V3       V4       V5
+1 44.26923 17.38718 201.8034 4314.744 2007.991
+2 48.61111 15.40123 219.9506 5359.877 2008.148
+3 41.00208 17.94375 189.4861 3458.507 2007.993
+
+$clusters
+  [1] 3 3 3 3 3 3 1 3 1 3 3 3 3 1 3 3 1 3 1 3 3 3 1 3 3 3 3 3 1 3 1 3 1 3 1 1 3
+ [38] 3 1 3 1 3 1 3 1 3 3 3 1 3 1 3 1 3 3 3 3 3 3 3 1 3 1 3 1 3 1 3 1 3 1 3 1 3
+ [75] 1 3 1 3 1 3 1 3 1 3 3 3 3 1 3 3 1 3 1 3 1 3 1 3 1 3 1 3 1 3 3 3 1 3 1 3 1
+[112] 3 1 1 1 3 3 3 3 3 3 3 3 3 1 3 1 3 1 3 3 3 1 3 1 3 1 3 1 3 3 3 3 3 3 1 3 3
+[149] 3 3 1 1 2 1 2 2 1 1 2 1 2 1 2 1 2 1 2 1 2 1 2 2 2 1 2 2 2 1 2 1 2 2 1 2 2
+[186] 2 2 2 2 1 2 1 2 1 1 2 2 1 2 2 2 2 2 1 2 2 2 1 2 1 2 1 2 1 2 1 2 1 2 1 2 1
+[223] 2 2 2 1 2 1 2 1 2 1 2 1 2 1 2 1 2 2 2 2 2 1 2 2 2 2 2 1 2 2 2 2 2 1 2 1 2
+[260] 1 2 2 2 1 2 1 2 2 2 2 2 2 2 2 3 1 3 3 3 1 3 3 1 3 3 3 3 1 3 1 3 3 3 1 3 3
+[297] 3 3 3 1 3 3 3 1 3 1 3 1 3 1 3 1 3 1 1 3 3 3 3 1 3 1 3 3 3 1 3 1 3 3 3 1 3
+[334] 3 1 3 3 1 3 3 1 3</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run built-in K-Means</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>result_builtin <span class="ot">&lt;-</span> <span class="fu">kmeans</span>(data, <span class="at">centers =</span> k, <span class="at">nstart =</span> <span class="dv">25</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>result_builtin</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>K-means clustering with 3 clusters of sizes 70, 165, 107
+
+Cluster means:
+  bill_length_mm bill_depth_mm flipper_length_mm body_mass_g     year
+1       48.93571      15.53143          220.6143    5435.357 2008.057
+2       41.17758      18.03273          189.9515    3518.182 2007.982
+3       44.87383      16.85140          204.9346    4448.832 2008.084
+
+Clustering vector:
+  [1] 2 2 2 2 2 2 3 2 3 2 2 2 2 3 2 2 3 2 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 2 2
+ [38] 2 3 2 2 2 3 2 3 2 2 2 3 2 3 2 3 2 2 2 2 2 2 2 3 2 3 2 2 2 3 2 3 2 2 2 3 2
+ [75] 3 2 2 2 3 2 3 2 3 2 2 2 2 2 2 2 3 2 3 2 3 2 3 2 3 2 3 2 3 2 2 2 2 2 3 2 3
+[112] 2 3 2 3 2 2 2 2 2 2 2 2 2 3 2 3 2 3 2 2 2 3 2 2 2 2 2 3 2 2 2 2 2 2 3 2 2
+[149] 2 2 3 3 1 3 1 1 3 3 1 3 1 3 1 3 1 3 1 3 1 3 1 1 1 3 1 1 1 3 1 3 1 1 3 1 1
+[186] 1 1 1 1 3 1 2 1 3 3 1 3 3 1 1 1 3 1 3 1 3 1 3 1 3 1 3 1 3 1 3 1 3 1 3 1 3
+[223] 1 1 1 3 1 3 1 3 1 3 1 3 1 3 1 3 1 3 1 1 1 3 1 3 1 3 3 3 1 3 1 1 1 3 1 3 1
+[260] 3 1 1 1 3 1 3 1 3 1 3 3 1 1 1 2 2 2 2 2 2 2 2 3 2 2 2 2 3 2 3 2 2 2 3 2 2
+[297] 2 2 2 3 2 2 2 3 2 3 2 3 2 2 2 3 2 3 2 2 2 2 2 3 2 3 2 2 2 2 2 3 2 2 2 3 2
+[334] 2 2 2 2 3 2 2 3 2
+
+Within cluster sum of squares by cluster:
+[1]  7011276 14090122  8077152
+ (between_SS / total_SS =  86.7 %)
+
+Available components:
+
+[1] "cluster"      "centers"      "totss"        "withinss"     "tot.withinss"
+[6] "betweenss"    "size"         "iter"         "ifault"      </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare Within-Cluster Sum of Squares (WCSS)</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>wcss_custom <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="fu">apply</span>(data, <span class="dv">1</span>, <span class="cf">function</span>(x) <span class="fu">min</span>(<span class="fu">apply</span>(result_custom<span class="sc">$</span>centers, <span class="dv">1</span>, <span class="cf">function</span>(center) <span class="fu">sum</span>((x <span class="sc">-</span> center)<span class="sc">^</span><span class="dv">2</span>)))))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>wcss_builtin <span class="ot">&lt;-</span> result_builtin<span class="sc">$</span>tot.withinss</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Print WCSS for comparison</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"WCSS (Custom K-Means):"</span>, wcss_custom, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>WCSS (Custom K-Means): 29652522 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"WCSS (Built-in K-Means):"</span>, wcss_builtin, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>WCSS (Built-in K-Means): 29178551 </code></pre>
+</div>
+</div>
+<p><br></p>
+</section>
+<section id="both-the-custom-k-means-function-and-the-built-in-r-kmeans-function-perform-similarly-in-clustering-the-palmer-penguins-dataset.-the-cluster-centers-and-the-wcss-values-are-close-indicating-that-both-methods-effectively-identify-similar-groupings-in-the-data.-however-the-built-in-function-performs-slightly-better-in-terms-of-wcss-however-the-difference-is-not-significant.-this-suggests-that-the-custom-k-means-implementation-is-effective-in-clustering-the-penguin-data-and-provides-comparable-results-to-the-built-in-function." class="level4">
+<h4 class="anchored" data-anchor-id="both-the-custom-k-means-function-and-the-built-in-r-kmeans-function-perform-similarly-in-clustering-the-palmer-penguins-dataset.-the-cluster-centers-and-the-wcss-values-are-close-indicating-that-both-methods-effectively-identify-similar-groupings-in-the-data.-however-the-built-in-function-performs-slightly-better-in-terms-of-wcss-however-the-difference-is-not-significant.-this-suggests-that-the-custom-k-means-implementation-is-effective-in-clustering-the-penguin-data-and-provides-comparable-results-to-the-built-in-function.">Both the custom K-Means function and the built-in R kmeans function perform similarly in clustering the Palmer Penguins dataset. The cluster centers and the WCSS values are close, indicating that both methods effectively identify similar groupings in the data. However, the built-in function performs slightly better in terms of WCSS, however, the difference is not significant. This suggests that the custom K-Means implementation is effective in clustering the penguin data and provides comparable results to the built-in function.</h4>
+<p><br><br></p>
+</section>
+<section id="now-we-will-evaluate-the-performance-of-the-k-means-algorithm-by-calculating-the-silhouette-score-for-different-values-of-k.-the-silhouette-score-is-a-measure-of-how-similar-an-object-is-to-its-own-cluster-compared-to-other-clusters.-a-higher-silhouette-score-indicates-better-clustering-results.-we-will-calculate-the-silhouette-score-for-k-2-to-7-and-visualize-the-results-to-determine-the-optimal-number-of-clusters-for-the-palmer-penguins-dataset." class="level4">
+<h4 class="anchored" data-anchor-id="now-we-will-evaluate-the-performance-of-the-k-means-algorithm-by-calculating-the-silhouette-score-for-different-values-of-k.-the-silhouette-score-is-a-measure-of-how-similar-an-object-is-to-its-own-cluster-compared-to-other-clusters.-a-higher-silhouette-score-indicates-better-clustering-results.-we-will-calculate-the-silhouette-score-for-k-2-to-7-and-visualize-the-results-to-determine-the-optimal-number-of-clusters-for-the-palmer-penguins-dataset.">Now we will evaluate the performance of the K-Means algorithm by calculating the Silhouette Score for different values of K. The Silhouette Score is a measure of how similar an object is to its own cluster compared to other clusters. A higher Silhouette Score indicates better clustering results. We will calculate the Silhouette Score for K = 2 to 7 and visualize the results to determine the optimal number of clusters for the Palmer Penguins dataset.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to calculate WCSS</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>calculate_wcss <span class="ot">&lt;-</span> <span class="cf">function</span>(data, k) {</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  kmeans_result <span class="ot">&lt;-</span> <span class="fu">kmeans</span>(data, <span class="at">centers =</span> k, <span class="at">nstart =</span> <span class="dv">25</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(kmeans_result<span class="sc">$</span>tot.withinss)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to calculate Silhouette Score</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>calculate_silhouette <span class="ot">&lt;-</span> <span class="cf">function</span>(data, k) {</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  kmeans_result <span class="ot">&lt;-</span> <span class="fu">kmeans</span>(data, <span class="at">centers =</span> k, <span class="at">nstart =</span> <span class="dv">25</span>)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  silhouette_score <span class="ot">&lt;-</span> <span class="fu">silhouette</span>(kmeans_result<span class="sc">$</span>cluster, <span class="fu">dist</span>(data))</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">mean</span>(silhouette_score[, <span class="dv">3</span>]))</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate WCSS and Silhouette Scores for K = 2 to 7</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>wcss_values <span class="ot">&lt;-</span> <span class="fu">numeric</span>()</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>silhouette_scores <span class="ot">&lt;-</span> <span class="fu">numeric</span>()</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">7</span>) {</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>  wcss_values[k <span class="sc">-</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">calculate_wcss</span>(data, k)</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  silhouette_scores[k <span class="sc">-</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">calculate_silhouette</span>(data, k)</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a data frame for plotting</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">K =</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">7</span>,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">WCSS =</span> wcss_values,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Silhouette =</span> silhouette_scores</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>results </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  K     WCSS Silhouette
+1 2 58697149  0.6295757
+2 3 29178551  0.5751470
+3 4 16316566  0.5544542
+4 5 10963000  0.5442764
+5 6  8371448  0.5418473
+6 7  5913684  0.5343481</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(results, <span class="fu">aes</span>(<span class="at">x =</span> K, <span class="at">y =</span> WCSS)) <span class="sc">+</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"WCSS and Silhouette Scores for Different Numbers of Clusters"</span>) <span class="sc">+</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Number of Clusters (K)"</span>) <span class="sc">+</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Within-Cluster Sum of Squares (WCSS)"</span>) <span class="sc">+</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">20</span>), </span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">16</span>), </span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">16</span>))</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(results, <span class="fu">aes</span>(<span class="at">x =</span> K, <span class="at">y =</span> Silhouette)) <span class="sc">+</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Number of Clusters (K)"</span>) <span class="sc">+</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Silhouette Score"</span>) <span class="sc">+</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">20</span>), </span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">16</span>), </span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">16</span>))</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(p1, p2, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw5_questions_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="the-plots-show-the-within-cluster-sum-of-squares-wcss-and-silhouette-scores-for-different-numbers-of-clusters-k-in-the-k-means-algorithm." class="level4">
+<h4 class="anchored" data-anchor-id="the-plots-show-the-within-cluster-sum-of-squares-wcss-and-silhouette-scores-for-different-numbers-of-clusters-k-in-the-k-means-algorithm.">The plots show the Within-Cluster Sum of Squares (WCSS) and Silhouette Scores for different numbers of clusters (K) in the K-Means algorithm.</h4>
+</section>
+<section id="wcss-plot" class="level4">
+<h4 class="anchored" data-anchor-id="wcss-plot">WCSS Plot:</h4>
+<ul>
+<li>The “elbow point” in the plot is around K = 3, where the rate of decrease in WCSS starts to slow down significantly. This suggests that K = 3 may be a good choice for the number of clusters.</li>
+</ul>
+</section>
+<section id="silhouette-score-plot" class="level4">
+<h4 class="anchored" data-anchor-id="silhouette-score-plot">Silhouette Score Plot:</h4>
+<ul>
+<li>The Silhouette Score is a measure of how similar an object is to its own cluster compared to other clusters. A higher Silhouette Score indicates better clustering results.</li>
+<li>The Silhouette Score decreases as the number of clusters (K) increases, which is expected as more clusters can lead to smaller, more isolated clusters.</li>
+<li>The highest Silhouette Score is observed for K = 2, indicating that a lower number of clusters may provide better clustering results based on this metric.</li>
+<li>However, the Silhouette Scores for K = 3 and K = 4 are also relatively high, suggesting that these values of K may also be reasonable choices.</li>
+</ul>
+</section>
+<section id="overall-the-evaluation-of-the-k-means-algorithm-using-wcss-and-silhouette-scores-suggests-that-k-3-or-k-4-may-be-good-choices-for-the-number-of-clusters-in-the-palmer-penguins-dataset.-the-elbow-point-in-the-wcss-plot-and-the-high-silhouette-scores-for-these-values-of-k-indicate-that-these-clusterings-provide-a-good-balance-between-cluster-separation-and-compactness.-therefore-my-answer-here-is-3." class="level4">
+<h4 class="anchored" data-anchor-id="overall-the-evaluation-of-the-k-means-algorithm-using-wcss-and-silhouette-scores-suggests-that-k-3-or-k-4-may-be-good-choices-for-the-number-of-clusters-in-the-palmer-penguins-dataset.-the-elbow-point-in-the-wcss-plot-and-the-high-silhouette-scores-for-these-values-of-k-indicate-that-these-clusterings-provide-a-good-balance-between-cluster-separation-and-compactness.-therefore-my-answer-here-is-3.">Overall, the evaluation of the K-Means algorithm using WCSS and Silhouette Scores suggests that K = 3 or K = 4 may be good choices for the number of clusters in the Palmer Penguins dataset. The “elbow point” in the WCSS plot and the high Silhouette Scores for these values of K indicate that these clusterings provide a good balance between cluster separation and compactness. Therefore, My answer here is 3.</h4>
+<p><br><br></p>
+</section>
 </section>
 </section>
 
@@ -652,10 +1045,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -665,8 +1057,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -679,6 +1080,135 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    const typesetMath = (el) => {
+      if (window.MathJax) {
+        // MathJax Typeset
+        window.MathJax.typeset([el]);
+      } else if (window.katex) {
+        // KaTeX Render
+        var mathElements = el.getElementsByClassName("math");
+        var macros = [];
+        for (var i = 0; i < mathElements.length; i++) {
+          var texText = mathElements[i].firstChild;
+          if (mathElements[i].tagName == "SPAN") {
+            window.katex.render(texText.data, mathElements[i], {
+              displayMode: mathElements[i].classList.contains('display'),
+              throwOnError: false,
+              macros: macros,
+              fleqn: false
+            });
+          }
+        }
+      }
+    }
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        typesetMath(container);
+        return container.innerHTML
+      } else {
+        typesetMath(note);
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      typesetMath(note);
+      return note.innerHTML;
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -722,6 +1252,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -747,6 +1278,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -807,6 +1364,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 

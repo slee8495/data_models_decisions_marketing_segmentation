@@ -4,7 +4,7 @@ author: "Sangho Lee"
 date: 6/4/2024
 ---
 
-#### Let's ask to CoPilot: What is segmentation, and k-means clustering? and why is it important to marketing analytics? 
+#### Let's ask CoPilot: What is segmentation, and k-means clustering? and why is it important to marketing analytics? 
 
 - Segmentation is the process of dividing a market into distinct groups of consumers who have similar needs, preferences, or behaviors. By segmenting the market, companies can better understand their customers and tailor their marketing strategies to meet the specific needs of each segment. This allows companies to target their marketing efforts more effectively and efficiently, leading to increased customer satisfaction and loyalty.
 
@@ -42,6 +42,12 @@ palmerpenguins::penguins %>%
   knitr::kable()
 ```
 
+
+<br>
+
+I will take out the non-numeric columns, so that we can apply k-means clustering to the dataset.
+
+
 ```{r}
 # Load the dataset and select only numeric columns
 data <- palmerpenguins::penguins %>%
@@ -54,33 +60,78 @@ data %>%
 ```
 
 
-## Custom K-Means Implementation
+
+### What is K-means clustering?
+- Imagine you have a box of colorful candies, and you want to group them into different piles based on their colors. K-means clustering is a way to do that grouping automatically. 
+- It's an unsupervised machine learning algorithm that tries to find groups in the data based on their similarity. The "K" in K-means refers to the number of groups you want to find in the data. The algorithm works by iteratively assigning data points to the nearest cluster centroid and updating the centroids based on the mean of the data points in each cluster. This process continues until the centroids no longer change significantly, resulting in well-defined clusters.
+
+
+## Custom K-Means Implementation (I will try my best to explain the code below.)
 
 ```{r}
 # Function to implement k-means
+
+# Starting the function
 kmeans_custom <- function(data, k, max_iter = 100) {
+  
+  # We start by creating a function called kmeans_custom.
+  # data is a list of candies with different features (like size, color).
+  # k is the number of groups (or piles) we want to make.
+  # max_iter is the maximum number of times we will try to make the groups better.
+
+# Getting ready
   n <- nrow(data)
   p <- ncol(data)
   centers <- data[sample(1:n, k), ]
   clusters <- rep(0, n)
+  
+  # n is the number of candies.
+  # p is the number of features of each candy (like size, color).
+  # centers are the starting points for our piles. We pick k random candies to start with.
+  # clusters is a list that will keep track of which pile each candy belongs to.
+  
+# Grouping Candies
   for (iter in 1:max_iter) {
-    # Assign clusters
     for (i in 1:n) {
       distances <- apply(centers, 1, function(center) sum((data[i, ] - center)^2))
       clusters[i] <- which.min(distances)
     }
-    # Update centers
+    
+    # We loop max_iter times to try to make the piles better.
+    # For each candy, we calculate how "far" it is from each pile's center. The distance is like how different the candy is from the pile's typical candy.
+    # We put the candy in the pile with the smallest distance (the most similar pile).
+
+
+# Updating Pile Centers
     new_centers <- matrix(NA, ncol = p, nrow = k)
     for (j in 1:k) {
       new_centers[j, ] <- colMeans(data[clusters == j, , drop=FALSE])
     }
-    # Check for convergence
+    
+    # We create a new list for the centers of the piles.
+    # For each pile, we find the average of all the candies in that pile. This average becomes the new center of the pile.
+
+
+# Checking for Changes
     if (all(centers == new_centers, na.rm = TRUE)) break
     centers <- new_centers
   }
+  
+  # If the centers don't change anymore, we stop because the piles are as good as they will get.
+  # If the centers do change, we update the centers and try again.
+
+# Finishing Up:
   list(centers = as.data.frame(centers), clusters = clusters)
 }
+
+  # We return the final centers of the piles and the list of which pile each candy belongs to.
+
 ```
+
+<br>
+
+
+
 
 ## Visualization of K-Means Algorithm
 
@@ -89,6 +140,12 @@ kmeans_custom <- function(data, k, max_iter = 100) {
 k <- 3
 result <- kmeans_custom(data, k)
 
+```
+
+- Here, k is set to 3, meaning we want to divide the data into 3 clusters.
+- This function we just created will perform the K-Means clustering and return the centers of the clusters and the cluster assignments for each data point.
+
+```{r}
 # Rename columns of the centers to match the original data
 colnames(result$centers) <- colnames(data)
 
@@ -102,29 +159,105 @@ data %>%
 ```
 
 
+#### The data table shows the first 10 rows of the Palmer Penguins dataset with cluster assignments after applying a custom K-Means clustering algorithm. 
+
+#### Columns
+- bill_length_mm: The length of the penguin's bill in millimeters.
+- bill_depth_mm: The depth (or height) of the penguin's bill in millimeters.
+- flipper_length_mm: The length of the penguin's flipper in millimeters.
+- body_mass_g: The mass of the penguin in grams.
+- year: The year the data was collected.
+- cluster: The cluster assignment for each penguin, indicating which group the K-Means algorithm assigned it to.
+
+#### Each penguin is assigned to one of three clusters (1, 2, or 3), based on similarities in their physical measurements (bill length, bill depth, flipper length, and body mass).
+
+<br><br>
+
+#### Now it will be benefitial to have a visual representation of the clusters. We can use a pair plot to visualize the relationships between the variables and how they are grouped by cluster.
+
+
 
 ```{r, fig.width = 11, fig.height = 11, fig.align = "center"}
-ggpairs(data, columns = 1:4, aes(color = cluster)) +
-  ggtitle("Pair Plot of Palmer Penguins Clusters") +
-  theme_minimal()
+ggpairs(data, columns = 1:4, aes(color = cluster, alpha = 0.7)) +
+  theme(
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14),
+    plot.title = element_text(size = 20, hjust = 0.5)
+  ) +
+  labs(title = "Pair Plot of Palmer Penguins Clusters", 
+       x = "Feature Value", 
+       y = "Density") 
 
 
 ```
-```{r}
-# Plot the initial data with random centroids
-ggplot(data, aes(x = bill_length_mm, y = bill_depth_mm, color = cluster)) +
-  geom_point() +
-  geom_point(data = result$centers, aes(x = bill_length_mm, y = bill_depth_mm), color = "black", size = 5) +
-  ggtitle("Initial Data with Random Centroids") +
-  theme_minimal()
-```
+
+#### Interpretation of the Pair Plot
+- The pair plot provides a visual representation of the relationships between different pairs of features in the Palmer Penguins dataset, along with the clusters identified by the custom K-Means algorithm. Here’s a detailed interpretation of the plot:
+
+##### General Observations:
+
+##### - Clusters: 
+- The plot shows three clusters, represented by different colors (red, green, and blue).
+- Each cluster groups penguins with similar physical characteristics.
+
+##### - Density Plots:
+- The diagonal elements of the plot are density plots for each feature.
+- These show the distribution of each feature (e.g., bill length, bill depth, flipper length, and body mass) within each cluster.
+
+##### - Scatter Plots:
+- The off-diagonal elements are scatter plots showing pairwise relationships between features.
+- These plots help in understanding how different features relate to each other and how the clusters are distributed across these relationships.
+
+##### Detailed Feature Relationships:
+###### Bill Length vs. Bill Depth:
+- The scatter plot shows that Cluster 3 (blue) generally has shorter bill lengths and depths compared to the other clusters.
+- Cluster 1 (red) has a wider range of bill lengths and depths, while Cluster 2 (green) has bill lengths and depths that are in between Clusters 1 and 3.
+
+###### Bill Length vs. Flipper Length:
+- The scatter plot indicates that Cluster 3 (blue) has shorter bill lengths and longer flipper lengths.
+- Cluster 1 (red) shows a more even spread across different bill and flipper lengths.
+- Cluster 2 (green) has bill lengths and flipper lengths that are intermediate.
+
+###### Bill Length vs. Body Mass:
+- Cluster 3 (blue) has shorter bill lengths and generally higher body mass.
+- Cluster 1 (red) has a wider range of both bill lengths and body mass.
+- Cluster 2 (green) falls in between, with moderate bill lengths and body mass.
+
+###### Bill Depth vs. Flipper Length:
+- Cluster 3 (blue) has a moderate range of bill depths but longer flipper lengths.
+- Cluster 1 (red) has a broad range of bill depths and flipper lengths.
+- Cluster 2 (green) shows a narrower range of bill depths but still has considerable variation in flipper lengths.
+
+###### Bill Depth vs. Body Mass:
+- Cluster 3 (blue) shows a moderate bill depth but higher body mass.
+- Cluster 1 (red) again shows a broad range, indicating more diversity in this cluster.
+- Cluster 2 (green) has a narrower range of bill depths and body mass.
+
+###### Flipper Length vs. Body Mass:
+- Cluster 3 (blue) has longer flipper lengths and higher body mass.
+- Cluster 1 (red) shows considerable variation across both flipper length and body mass.
+- Cluster 2 (green) falls in between the other two clusters with moderate values.
+
+##### Correlation Coefficients:
+- Corr values in the upper triangular section show the correlation coefficients between pairs of features.
+- For example, the correlation between bill length and flipper length is 0.656, indicating a positive relationship.
+
+##### Summary:
+- Cluster 1 (Red): Shows a high degree of variability in all features, indicating a diverse group of penguins.
+- Cluster 2 (Green): Generally has moderate values for all features, falling in between the other two clusters.
+- Cluster 3 (Blue): Has shorter bill lengths but longer flipper lengths and higher body mass, making it a distinct group.
+
+#### Overall, the pair plot provides a comprehensive view of the relationships between different features and how they are grouped by cluster. This visualization helps in understanding the characteristics of each cluster and how the K-Means algorithm has divided the penguins based on their physical measurements.
 
 
-##### What is PCA?
+<br><br>
+
+
+### What is PCA?
 - PCA (Principal Component Analysis) is a dimensionality reduction technique that is commonly used in data analysis to identify patterns and relationships in high-dimensional data.
 
 
-##### Why is it benefitial to use PCA before clustering?
+### Why is it benefitial to use PCA before clustering?
 - Because it reduces the dimensionality of the data by transforming the original features into a new set of uncorrelated variables called principal components. This transformation helps to capture the most important information in the data while removing noise and redundancy. By reducing the number of dimensions, PCA simplifies the data and makes it easier to visualize and interpret. This can improve the performance of clustering algorithms by reducing the computational complexity and enhancing the clustering results. Additionally, PCA can help to identify the most relevant features that contribute to the clustering process, leading to more accurate and meaningful cluster assignments.
 
 
@@ -137,6 +270,7 @@ pca_result <- PCA(data[, 1:4], graph = FALSE)
 pca_data <- data.frame(pca_result$ind$coord)
 pca_data$cluster <- data$cluster
 
+
 # Plot PCA results
 fviz_pca_ind(pca_result,
              geom.ind = "point",
@@ -148,10 +282,158 @@ fviz_pca_ind(pca_result,
 
 ```
 
+#### Interpretation of the PCA Plot
+- The PCA (Principal Component Analysis) plot provides a visual representation of the Palmer Penguins dataset in a reduced two-dimensional space, with clusters identified by the custom K-Means algorithm. Here’s a detailed interpretation of the plot:
+
+##### Axes:
+- Dim1 (68.8%): The first principal component, which explains 68.8% of the variance in the data.
+- Dim2 (19.3%): The second principal component, which explains 19.3% of the variance in the data.
+- Together, these two dimensions explain 88.1% of the variance in the data, making them a good summary of the dataset.
+
+#### Clusters:
+##### The plot shows three clusters, represented by different colors and shapes:
+- Cluster 1 (Blue, Circles)
+- Cluster 2 (Orange, Triangles)
+- Cluster 3 (Gray, Squares)
+
+#### Ellipses:
+- The ellipses around each cluster represent the 95% confidence interval for the cluster's data points. This gives a sense of the spread and concentration of each cluster.
+
+#### Principal Components:
+- Dim1 is the most significant in explaining the variance in the dataset and is the primary axis along which the clusters are separated.
+
+#### Confidence Intervals:
+- The ellipses provide a visual indication of the spread and overlap of the clusters. The ellipses for each cluster do not overlap significantly, indicating clear separation between the clusters.
+- The 95% confidence intervals indicate that while there is clear separation between the clusters, there is also some overlap between them. This suggests that there may be some ambiguity in the classification of certain data points. However, the clusters are generally well-defined and distinct. 
+- This PCA plot effectively reduces the multidimensional penguin data into two dimensions, highlighting the key features that separate the clusters and providing a clear visual of the distinct groups within the dataset. This visualization can help in understanding the relationships between the clusters and the underlying structure of the data. 
+
+<br><br>
+
+#### Now we will compare the performance of my k-means clustering code with that of the built-in R function.
+
+```{r, include = FALSE}
+data <- palmerpenguins::penguins %>%
+  select_if(is.numeric) %>%
+  na.omit() 
+```
+
+
+```{r}
+# Run custom K-Means
+result_custom <- kmeans_custom(data, k)
+result_custom
+
+```
+
+
+```{r}
+# Run built-in K-Means
+result_builtin <- kmeans(data, centers = k, nstart = 25)
+result_builtin
+
+```
 
 
 
-*todo: Compare your results to the built-in `kmeans` function in R.*
+```{r}
+# Compare Within-Cluster Sum of Squares (WCSS)
+wcss_custom <- sum(apply(data, 1, function(x) min(apply(result_custom$centers, 1, function(center) sum((x - center)^2)))))
+wcss_builtin <- result_builtin$tot.withinss
 
-*todo: Calculate both the within-cluster-sum-of-squares and silhouette scores (you can use built-in functions to do so) and plot the results for various numbers of clusters (ie, K=2,3,...,7). How many clusters are suggested by these two metrics?*
+# Print WCSS for comparison
+cat("WCSS (Custom K-Means):", wcss_custom, "\n")
+cat("WCSS (Built-in K-Means):", wcss_builtin, "\n")
+```
+
+
+<br>
+
+#### Both the custom K-Means function and the built-in R kmeans function perform similarly in clustering the Palmer Penguins dataset. The cluster centers and the WCSS values are close, indicating that both methods effectively identify similar groupings in the data. However, the built-in function performs slightly better in terms of WCSS, however, the difference is not significant. This suggests that the custom K-Means implementation is effective in clustering the penguin data and provides comparable results to the built-in function. 
+
+<br><br>
+
+#### Now we will evaluate the performance of the K-Means algorithm by calculating the Silhouette Score for different values of K. The Silhouette Score is a measure of how similar an object is to its own cluster compared to other clusters. A higher Silhouette Score indicates better clustering results. We will calculate the Silhouette Score for K = 2 to 7 and visualize the results to determine the optimal number of clusters for the Palmer Penguins dataset. 
+
+
+```{r}
+# Function to calculate WCSS
+calculate_wcss <- function(data, k) {
+  kmeans_result <- kmeans(data, centers = k, nstart = 25)
+  return(kmeans_result$tot.withinss)
+}
+
+# Function to calculate Silhouette Score
+calculate_silhouette <- function(data, k) {
+  kmeans_result <- kmeans(data, centers = k, nstart = 25)
+  silhouette_score <- silhouette(kmeans_result$cluster, dist(data))
+  return(mean(silhouette_score[, 3]))
+}
+
+# Calculate WCSS and Silhouette Scores for K = 2 to 7
+wcss_values <- numeric()
+silhouette_scores <- numeric()
+for (k in 2:7) {
+  wcss_values[k - 1] <- calculate_wcss(data, k)
+  silhouette_scores[k - 1] <- calculate_silhouette(data, k)
+}
+
+```
+
+```{r}
+# Create a data frame for plotting
+results <- data.frame(
+  K = 2:7,
+  WCSS = wcss_values,
+  Silhouette = silhouette_scores
+)
+
+results 
+```
+
+```{r, fig.width=12, fig.height=6}
+p1 <- ggplot(results, aes(x = K, y = WCSS)) +
+  geom_line(color = "blue") +
+  geom_point(color = "blue") +
+  ggtitle("WCSS and Silhouette Scores for Different Numbers of Clusters") +
+  xlab("Number of Clusters (K)") +
+  ylab("Within-Cluster Sum of Squares (WCSS)") +
+  theme_classic() +
+  theme(plot.title = element_text(size = 20), 
+        axis.title.x = element_text(size = 16), 
+        axis.title.y = element_text(size = 16))
+
+p2 <- ggplot(results, aes(x = K, y = Silhouette)) +
+  geom_line(color = "red") +
+  geom_point(color = "red") +
+  xlab("Number of Clusters (K)") +
+  ylab("Silhouette Score") +
+  theme_classic() +
+  theme(plot.title = element_text(size = 20), 
+        axis.title.x = element_text(size = 16), 
+        axis.title.y = element_text(size = 16))
+
+grid.arrange(p1, p2, ncol = 2)
+
+```
+
+
+#### The plots show the Within-Cluster Sum of Squares (WCSS) and Silhouette Scores for different numbers of clusters (K) in the K-Means algorithm. 
+
+#### WCSS Plot:
+- The "elbow point" in the plot is around K = 3, where the rate of decrease in WCSS starts to slow down significantly. This suggests that K = 3 may be a good choice for the number of clusters.
+
+#### Silhouette Score Plot:
+- The Silhouette Score is a measure of how similar an object is to its own cluster compared to other clusters. A higher Silhouette Score indicates better clustering results.
+- The Silhouette Score decreases as the number of clusters (K) increases, which is expected as more clusters can lead to smaller, more isolated clusters.
+- The highest Silhouette Score is observed for K = 2, indicating that a lower number of clusters may provide better clustering results based on this metric.
+- However, the Silhouette Scores for K = 3 and K = 4 are also relatively high, suggesting that these values of K may also be reasonable choices.
+
+#### Overall, the evaluation of the K-Means algorithm using WCSS and Silhouette Scores suggests that K = 3 or K = 4 may be good choices for the number of clusters in the Palmer Penguins dataset. The "elbow point" in the WCSS plot and the high Silhouette Scores for these values of K indicate that these clusterings provide a good balance between cluster separation and compactness. Therefore, My answer here is 3. 
+
+
+<br><br>
+
+
+
+
 
